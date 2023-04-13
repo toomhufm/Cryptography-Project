@@ -1,42 +1,60 @@
-# Efficient and Secure File Transfer in Cloud Through Hybrid Encryption Using AES and RSA Algorithm
+# Efficient and Secure File Transfer in Cloud Through Hybrid Encryption Using CP-ABE
 
 ## Abstract
-Cloud services are already hiring information thanks to recent developments in cloud computing. Users may get low-cost storage using cloud services like Dropbox and Google Drive. Here, we give a security mechanism that offers a higher level of protection by encrypting and decrypting the files. The file that we upload to the cloud is encrypted using the double encryption approach. The two techniques are used sequentially to encrypt the file twice.
-The RSA algorithm is used to encrypt the file after the AES method. The corresponding keys are being created during the execution of the algorithm. The level of security is raised by this method. Security level, speed, data secrecy, data integrity, and cipher text size are some of the different factors that we have taken into consideration here.
+Cloud services are already hiring information thanks to recent developments in cloud computing. Users may get low-cost storage using cloud services like Dropbox and Google Drive. Here, we give a security mechanism that offers a higher level of protection and access control. 
 
 ## Scenario
-In this scenario, you are using a cloud service (Dropbox, Google Drive, Azure, etc..) to store your company's secret data. Unfortunately, the cloud service suffered a data breach that involved sensitive information of millions users after threat actors breached its AWS (Amazon Web Services) server. The data leak included customer information, internal documents for customers, customers personal documents, and other information.
+In this scenario, a finance company is using a cloud service to store their private digital assets ( contracts, internal documentation, etc). Therefore, they will be facing several security issues like data breach, insider threat. 
+
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/92283038/226251074-a5947361-be29-46ea-a3c9-7927d686b773.png" />
+  <img src="https://user-images.githubusercontent.com/92283038/231777466-f807a84c-b556-45aa-88bd-ba196d392caa.png" />
 </p>
 
 | Subject     | Description |
 | ----------- | ----------- |
-| Protected Assets | User digital assets       |
-|Related-Party | Assets owner, cloud Service, assets related company|
-|Security Goal | Prevent leaked user documents from being viewed|
+|Related-Party | Data owner, cloud Service, recipients, attacker|
+| Goal | Prevent user private data from being viewed by unassociated person|
 
+| Security Goals| 
+| ----------- |
+| Data Confidentiality | 
+| Data Intergity |
+| Access Control |
 ## Solution
 
-To solve the problem we metioned before, increase data security is necessaries. Therefore, using double encryption technique using AES and RSA algorithms to secure the data before uploading to the cloud service. The figures below will illustrate the process of uploading and downloading secure file using the mentioned method.
+To fullfill the security goals we proposed before, our solution is using Ciphertext-Policies Attributes-Based Encryption ( CP-ABE )
 
-Here is how it work, in Figure 1 we can see the file is encrypted with AES algorithm first, then the AES key will be encrypted with RSA Public Key and then attach to the file before upload to the cloud.
+The Figure 1 describes how CP-ABE work. 
+The encrypted data requires some certain attributes of the user in order to decrypt. For example, to be able to decrypt this data, user must have role President or name is Alice and location is Ha Noi.
+![image](https://user-images.githubusercontent.com/92283038/231779474-eed588ea-849d-4eed-a5b7-8eee1ad6736a.png)
+
+
 <p align="center"> 
-<img src="https://user-images.githubusercontent.com/92283038/227442920-38a5208d-f469-49b7-adb6-b106af609547.png">
-<p align="center">Figure 1. Encryption Process</p>
-</p>
-First when the user register a new account, the Key Generator will generate a RSA key pair for the user as showed in Figure 2.
-<p align="center"> 
-<img src="https://user-images.githubusercontent.com/92283038/227447623-0ba64281-6f37-4ba4-ac0e-8027bbe80dc2.png">
-<p align="center">Figure 2. KeyGen Process</p>
+<img src="https://user-images.githubusercontent.com/92283038/231779378-8bc46e7f-bc74-4c46-b7de-785dc02123bf.png">
+<p align="center">Figure 1. CP-ABE</p>
 </p>
 
-For decryption, user will provide the RSA Private Key, with that we can retrieve the AES Key for decrypting the file.
+### Why we choose CP-ABE?
+
+1.Data confidentiality:
+
+Data Confidentiality is a set of rules or a promise that limits access or places restrictions on certain types of information. In cloud, the data was encrypted by the data owner and unauthorized parties including the cloud cannot know the information about the encrypted data hence data confidentiality is maintained.
+
+2. Secured access control:
+
+Secured Access Control is any mechanism by which a cloud system grants or revokes the right to access some data, or perform some action. In cloud users are granted with different access right to access data to provide security.
+
+3. User revocation:
+
+If the user quits the system, the scheme can revoke his access right from the system directly. The revocable user cannot access any stored data, because his access right was revoked.
+
+
 <p align="center"> 
-<img src="https://user-images.githubusercontent.com/92283038/227451178-e4f374e3-8c88-437d-8d22-1d2dfb63194b.png">
-<p align="center">Figure 3. Decryption Process</p>
+<img src="https://user-images.githubusercontent.com/92283038/231780537-6b19041d-c456-40b8-b9a1-ff03cfb4dac0.png">
+<p align="center">Figure 2. Mechanism Workflow </p>
 </p>
+
 
 
 
@@ -54,8 +72,8 @@ For decryption, user will provide the RSA Private Key, with that we can retrieve
 
 ### Tasks chart
 
-|   Name   | ID | UX/UI Design | Authentication | Cloud API | Data Encryption/Decryption | Project Management | Presentation |
-| ----------- | ----------- |  :----------: | :----------: | :----------: |:----------: |:----------: |:----------: |
-| Nguyễn Trần Anh Đức | 21521964 | X| | X | X| X |
-| Nguyễn Hữu Tiến | 21520479 | X | | | X |  | X | 
-| Lê Thanh Duẩn | 19521370 | | X | X| |  |
+|   Name   | ID | Frontend Development | Backend Development| Presentation |
+| ----------- | ----------- |  :----------: | :----------: | :----------: |
+| Nguyễn Trần Anh Đức | 21521964 | X| X | X |
+| Nguyễn Hữu Tiến | 21520479 | X | X |  |
+| Lê Thanh Duẩn | 19521370 | | X | | 
