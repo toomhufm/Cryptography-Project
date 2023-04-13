@@ -47,7 +47,14 @@ using CryptoPP::XTS;
 #include <cryptopp/gcm.h>
 using CryptoPP::GCM;
 
+#include <cryptopp/secblock.h>
+using CryptoPP::RoundUpToMultipleOf;
+using CryptoPP::AlignedSecByteBlock;
 
+#include "cryptopp/hrtimer.h"
+using CryptoPP::ThreadUserTimer;
+
+using namespace CryptoPP;
 
 // ============================     AES CLASSES    ====================================//
 
@@ -85,8 +92,8 @@ class AESProgram
     CCM<AES, 16>::Encryption CCM_ENC;
     CCM<AES, 16>::Encryption CCM_DEC;
     /*********************************/
-    GCM<AES>::Encryption GCM_ENC;
-    GCM<AES>::Decryption GCM_DEC;
+    GCM<AES,GCM_2K_Tables>::Encryption GCM_ENC;
+    GCM<AES,GCM_2K_Tables>::Decryption GCM_DEC;
 public:
     /*********************************\
     \*********************************/
@@ -94,11 +101,13 @@ public:
     {
         ECB_ENC.SetKey(key, key.size());
         StringSource ss(plain, true, new StreamTransformationFilter(ECB_ENC, new StringSink(cipher)));
+        Benchmark(ECB_ENC);
     }
     void Decryption_ECB(string &cipher, const string &plain, const SecByteBlock &key)
     {
         ECB_DEC.SetKey(key, key.size());
         StringSource ss(plain, true, new StreamTransformationFilter(ECB_DEC, new StringSink(cipher)));
+        Benchmark(ECB_DEC);
     }
     /*********************************\
     \*********************************/
@@ -106,11 +115,13 @@ public:
     {
         CBC_ENC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(CBC_ENC, new StringSink(cipher)));
+        Benchmark(CBC_ENC);
     }
     void Decryption_CBC(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv)
     {
         CBC_DEC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(CBC_DEC, new StringSink(cipher)));
+        Benchmark(CBC_DEC);
     }
     /*********************************\
     \*********************************/
@@ -118,11 +129,13 @@ public:
     {
         OFB_ENC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(OFB_ENC, new StringSink(cipher)));
+        Benchmark(OFB_ENC);
     }
     void Decryption_OFB(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv)
     {
         OFB_DEC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(OFB_DEC, new StringSink(cipher)));
+        Benchmark(OFB_DEC);
     }
     /*********************************\
     \*********************************/
@@ -130,11 +143,13 @@ public:
     {
         CFB_ENC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(CFB_ENC, new StringSink(cipher)));
+        Benchmark(CFB_ENC);
     }
     void Decryption_CFB(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv)
     {
         CFB_DEC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(CFB_DEC, new StringSink(cipher)));
+        Benchmark(CFB_DEC);
     }
     /*********************************\
     \*********************************/
@@ -142,11 +157,13 @@ public:
     {
         CTR_ENC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(CTR_ENC, new StringSink(cipher)));
+        Benchmark(CTR_ENC);
     }
     void Decryption_CTR(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv)
     {
         CTR_DEC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(CTR_DEC, new StringSink(cipher)));
+        Benchmark(CTR_DEC);
     }
     /*********************************\
     \*********************************/
@@ -154,11 +171,13 @@ public:
     {
         XTS_ENC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(XTS_ENC, new StringSink(cipher), StreamTransformationFilter::NO_PADDING));
+        Benchmark(XTS_ENC);
     }
     void Decryption_XTS(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv)
     {
         XTS_DEC.SetKeyWithIV(key, key.size(), iv);
         StringSource ss(plain, true, new StreamTransformationFilter(XTS_DEC, new StringSink(cipher), StreamTransformationFilter::NO_PADDING));
+        Benchmark(XTS_DEC);
     }
     /*********************************\
     \*********************************/
@@ -167,26 +186,30 @@ public:
         CCM_ENC.SetKeyWithIV(key, key.size(), iv);
         CCM_ENC.SpecifyDataLengths(0, plain.length(), 0);
         StringSource ss(plain, true, new AuthenticatedEncryptionFilter(CCM_ENC, new StringSink(cipher)));
+        Benchmark(CCM_ENC);
     }
     void Decryption_CCM(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv)
     {
         CCM_DEC.SetKeyWithIV(key, key.size(), iv);
         CCM_ENC.SpecifyDataLengths(0, plain.length() - 16, 0);
         StringSource ss(plain, true, new AuthenticatedDecryptionFilter(CCM_DEC, new StringSink(cipher)));
+        Benchmark(CCM_DEC);
     }
     /*********************************\
     \*********************************/
     void Encryption_GCM(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv){
         GCM_ENC.SetKeyWithIV(key,key.size(),iv);
-        const int TAG_SIZE = 12;
+        //const int TAG_SIZE = 12;
         GCM_ENC.SpecifyDataLengths(0,plain.length(),0);
-        StringSource ss( plain, true,new AuthenticatedEncryptionFilter( GCM_ENC,new StringSink(cipher), false, TAG_SIZE)); 
+        StringSource ss( plain, true,new AuthenticatedEncryptionFilter( GCM_ENC,new StringSink(cipher), false)); 
+        Benchmark(GCM_ENC);
     }
     void Decryption_GCM(string &cipher, const string &plain, const SecByteBlock &key, const SecByteBlock &iv){
         GCM_DEC.SetKeyWithIV(key,key.size(),iv);
-        const int TAG_SIZE = 12;
-        AuthenticatedDecryptionFilter df( GCM_DEC,new StringSink(cipher), TAG_SIZE); 
-        StringSource ss(plain, true,new Redirector(df)); 
+       // const int TAG_SIZE = 12;
+        AuthenticatedDecryptionFilter df( GCM_DEC,new StringSink(cipher)); 
+        StringSource ss(plain, true,new Redirector(df /*, PASS_EVERYTHING */)); 
+        Benchmark(GCM_DEC);
     }
 
     /*********************************\
@@ -283,6 +306,38 @@ public:
         }
         return recovered;
     }
+    void Benchmark(StreamTransformation &cipher)
+    {
+        AutoSeededRandomPool prng;
+        const int BUF_SIZE = RoundUpToMultipleOf(2048U,dynamic_cast<StreamTransformation&>(cipher).OptimalBlockSize());
+        const double runTimeInSeconds = 3.0;
+        AlignedSecByteBlock buf(BUF_SIZE);
+        prng.GenerateBlock(buf, buf.size());
+
+        double elapsedTimeInSeconds;
+        unsigned long i=0, blocks=1;
+
+        ThreadUserTimer timer;
+        timer.StartTimer();
+
+        do
+        {
+            blocks *= 2;
+            for (; i<blocks; i++)
+                cipher.ProcessString(buf, BUF_SIZE);
+            elapsedTimeInSeconds = timer.ElapsedTimeAsDouble();
+        }
+        while (elapsedTimeInSeconds < runTimeInSeconds);
+        const double cpuFreq = 3.3 * 1000 * 1000 * 1000;
+        const double bytes = static_cast<double>(BUF_SIZE) * blocks;
+        const double ghz = cpuFreq / 1000 / 1000 / 1000;
+        const double mbs = bytes / elapsedTimeInSeconds / 1024 / 1024;
+        const double cpb = elapsedTimeInSeconds * cpuFreq / bytes;
+        wcout << "  " << ghz << " GHz cpu frequency"  << std::endl;
+        wcout << "  " << cpb << " cycles per byte (cpb)" << std::endl;
+        wcout << "  " << mbs << " MiB per second (MiB)" << std::endl;
+    }
+
 };
 
 #endif

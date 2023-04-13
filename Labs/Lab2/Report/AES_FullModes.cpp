@@ -100,6 +100,15 @@ void Decrypt_Process(AESProgram &prog, MODE CipherMode, string _cipher, SecByteB
     wcout << "Recover text: " << string_to_wstring(plain) << endl;
 }
 
+string InputFromFile(wstring wfilename)
+{
+    wcin.ignore();
+    string plain, filename;
+    filename = wstring_to_string(wfilename);
+    FileSource file(filename.data(), true, new StringSink(plain));
+    return plain;
+}
+
 
 // ============================     MAIN PROGRAM    ====================================//
 
@@ -119,10 +128,11 @@ int main(){
     PrintByte(key);
     wcout << "IV : ";
     PrintByte(iv);
+    string plaintext = InputFromFile();
 
     // ================================== CBC MODE =====================================// 
     wcout << "============================ CBC MODE ============================\n";
-    string plaintext = "CBC Mode Test";
+    // string plaintext = "CBC Mode Test";
     string cipher, recovered, encoded;
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::CBC;
@@ -135,7 +145,7 @@ int main(){
     
     // ================================== ECB MODE =====================================// 
     wcout << "============================ ECB MODE ============================\n";
-    plaintext = "ECB Mode Test";
+    // plaintext = "ECB Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::ECB;
     // Encryption
@@ -147,7 +157,7 @@ int main(){
 
     // ================================== OFB MODE =====================================// 
     wcout << "============================ OFB MODE ============================\n";
-    plaintext = "OFB Mode Test";
+    // plaintext = "OFB Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::OFB;
     // Encryption
@@ -158,7 +168,7 @@ int main(){
 
     // ================================== CFB MODE =====================================// 
     wcout << "============================ CFB MODE ============================\n";
-    plaintext = "CFB Mode Test";
+    // plaintext = "CFB Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::CFB;
     // Encryption
@@ -169,7 +179,7 @@ int main(){
 
     // ================================== CTR MODE =====================================// 
     wcout << "============================ CTR MODE ============================\n";
-    plaintext = "CTR Mode Test";
+    // plaintext = "CTR Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::CTR;
     // Encryption
@@ -182,7 +192,7 @@ int main(){
     wcout << "============================ XTS MODE ============================\n";
     SecByteBlock xts_key(32);
     prng.GenerateBlock(xts_key,xts_key.size());
-    plaintext = "XTS Mode Test";
+    // plaintext = "XTS Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::CTR;
     // Encryption
@@ -193,7 +203,7 @@ int main(){
 
     // ================================== CCM MODE =====================================// 
     wcout << "============================ CCM MODE ============================\n";
-    plaintext = "CCM Mode Test";
+    // plaintext = "CCM Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::CTR;
     // Encryption
@@ -204,7 +214,7 @@ int main(){
 
     // ================================== GCM MODE =====================================// 
     wcout << "============================ GCM MODE ============================\n";
-    plaintext = "GCM Mode Test";
+    // plaintext = "GCM Mode Test";
     wcout << "Plaintext : " << string_to_wstring(plaintext) << endl;
     AES_Mode = MODE::GCM;
     // Encryption
