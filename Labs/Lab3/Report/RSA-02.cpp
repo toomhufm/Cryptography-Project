@@ -4,13 +4,15 @@
 
 #include <cryptopp/rsa.h>
 using CryptoPP::RSA;
+using CryptoPP::RSASS;
 using CryptoPP::InvertibleRSAFunction;
-using CryptoPP::RSAES_OAEP_SHA_Encryptor;
-using CryptoPP::RSAES_OAEP_SHA_Decryptor;
+
+#include <cryptopp/pssr.h>
+using CryptoPP::PSS;
 
 #include <cryptopp/sha.h>
 using CryptoPP::SHA1;
-
+using CryptoPP::SHA256;
 #include <cryptopp/filters.h>
 using CryptoPP::StringSink;
 using CryptoPP::StringSource;
@@ -18,8 +20,10 @@ using CryptoPP::PK_EncryptorFilter;
 using CryptoPP::PK_DecryptorFilter;
 
 #include <cryptopp/files.h>
-using CryptoPP::FileSink;
-using CryptoPP::FileSource;
+using CryptoPP::SignerFilter;
+using CryptoPP::SignatureVerificationFilter;
+using CryptoPP::StringSink;
+using CryptoPP::StringSource;
 
 #include <cryptopp/osrng.h>
 using CryptoPP::AutoSeededRandomPool;
@@ -71,66 +75,63 @@ string ToHex(const string &text)
     return encoded;
 }
 
+void PrintByte(const SecByteBlock &message)
+{
+    string encoded;
+    StringSource(message, message.size(), true, new HexEncoder(new StringSink(encoded)));
+    cout << encoded << endl;
+}
+
 // ===================================================================== //
 int main(int argc, char* argv[])
 {
     try
     {
-        ////////////////////////////////////////////////
-        // Generate keys
         AutoSeededRandomPool rng;
 
         InvertibleRSAFunction parameters;
-        parameters.GenerateRandomWithKeySize( rng, 1024 );
+        parameters.GenerateRandomWithKeySize(rng, 3072);
 
-        RSA::PrivateKey privateKey( parameters );
-        RSA::PublicKey publicKey( parameters );
+        RSA::PrivateKey privateKey(parameters);
+        RSA::PublicKey publicKey(parameters);
 
-        string plain="Encrypt with Public Key", cipher, recovered;
-        cout << "Plain Text : " << plain << endl;
+        // Message
+        string message = "RSA Authentication";
+        cout << "Message : " << message << endl;
+        // Signer object
+        RSASS<PSS, SHA256>::Signer signer(privateKey);
 
-        ///////////////////////////////////////
-        // Generated Parameters
-        const Integer n = parameters.GetModulus();
-        const Integer p = parameters.GetPrime1();
-        const Integer q = parameters.GetPrime2();
-        const Integer d = parameters.GetPrivateExponent();
-        const Integer e = parameters.GetPublicExponent();
+        // Create signature space
+        size_t length = signer.MaxSignatureLength();
+        SecByteBlock signature(length);
 
-        ///////////////////////////////////////
-        // Dump
-        cout << "RSA Parameters:" << endl;
-        cout << " n: " << n << endl;
-        cout << " p: " << p << endl;
-        cout << " q: " << q << endl;
-        cout << " d: " << d << endl;
-        cout << " e: " << e << endl;
-        cout << endl;
+        // Sign message
+        length = signer.SignMessage(rng, (const byte*) message.c_str(),
+            message.length(), signature);
 
-        Integer m((const byte *)plain.data(), plain.size());
+        // Resize now we know the true size of the signature
+        signature.resize(length);
+        cout << "Signature : "; 
+        PrintByte(signature);
+        // Verifier object
+        RSASS<PSS, SHA256>::Verifier verifier(publicKey);
 
-        ////////////////////////////////////////////////
-        // Encryption
-        Integer c = publicKey.ApplyFunction(m);
-        cout << "Cipher: " << hex << c << endl;
-        ////////////////////////////////////////////////
+        // Verify
+        bool result = verifier.VerifyMessage((const byte*)message.c_str(),
+            message.length(), signature, signature.size());
+        // Result
+        if(true == result) {
+            cout << "Signature on message verified" << endl;
+        } else {
+            cout << "Message verification failed" << endl;
+        }
 
+    } // try
 
-        ////////////////////////////////////////////////
-        // Decryption
-        Integer r = privateKey.CalculateInverse(rng, c);
-        size_t req = r.MinEncodedSize();
-        recovered.resize(req);
-
-        r.Encode((byte *) &recovered[0], recovered.size());
-        cout << "Recovered: " << recovered << endl;
-    }
-    catch( CryptoPP::Exception& enc )
-    {
-        cerr << "Caught Exception..." << endl;
-        cerr << enc.what() << endl;
+    catch( CryptoPP::Exception& e ) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
-	return 0;
+    return 0;
 }
 
